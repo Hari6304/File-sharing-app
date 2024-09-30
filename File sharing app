@@ -1,1 +1,69 @@
+index.html
+file-sharing-app/
+│
+├── server.js          # Backend server
+├── uploads/           # Directory to store uploaded files
+└── public/
+    └── index.html     # Frontend HTML file
+process.env.PORT
+app.post
+file.fieldnameconst express = require('express');
+const multer = require('multer');
+const path = require('path');
+const app = express();
 
+// Set storage engine
+const storage = multer.diskStorage({
+  destination: './uploads/',
+  filename: (req, file, cb) => {
+    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+  }
+});
+
+// Init upload
+const upload = multer({
+  storage: storage
+}).single('myFile');
+
+// Serve the frontend HTML file
+app.use(express.static('public'));
+
+// Upload endpoint
+app.post('/upload', (req, res) => {
+  upload(req, res, (err) => {
+    if (err) {
+      res.send('Error uploading file.');
+    } else {
+      if (req.file == undefined) {
+        res.send('No file selected!');
+      } else {
+        res.send(`File uploaded successfully! <a href="/uploads/${req.file.filename}">Download File</a>`);
+      }
+    }
+  });
+});
+
+// Serve uploaded files
+app.use('/uploads', express.static('uploads'));
+
+// Start the server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Sharing App</title>
+</head>
+<body>
+    <h1>Upload a File</h1>
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+        <input type="file" name="myFile" required>
+        <button type="submit">Upload</button>
+    </form>
+</body>
+</html>
+mkdir uploads
+server.js
+node server.js
